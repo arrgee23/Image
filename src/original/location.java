@@ -8,10 +8,9 @@ import java.io.*;
 import javax.imageio.ImageIO;
 
 class location{
-	static int COL=0;
-	static int ROW=0;
-	static int COUNT=11; //no of frames in the video
-	static String filename = "input/input"; // file path of frames - must end with \\input and name of frames must be of the form  
+	
+	static int COUNT=5; //no of frames in the video
+	static String filename = "input1/input"; // file path of frames - must end with \\input and name of frames must be of the form  
 														   // input<number>.jpg
 	static int img_num=1; //index to iterate over all images/frames
 	static MyImage img_array[] = new MyImage[COUNT];  
@@ -23,71 +22,7 @@ class location{
 		}	
 	}
 	
-	static boolean safe(int M[][], int row, int col, int visited[][]) //checks if the next pixel to visit for DFS is not yet visited and inside the image
-	{
-	    return (row >= 0) && (row < ROW) &&     // row number is in range
-	           (col >= 0) && (col < COL) &&     // column number is in range
-	           (M[row][col]==1 && visited[row][col]==0); // value is 1 and not yet visited -> black pixel
-	}
-	 
-	// A utility function to do DFS for a 2D boolean matrix. 
-	// It only considers the 8 neighbors as adjacent vertices
-	static void DFS(int M[][], int row, int col, int visited[][], position bottom, position up, position left, position right)
-	{
-	    // These arrays are used to get row and column numbers of 8 neighbors 
-	    // of a given cell
-	     int rowNbr[] = {-1, -1, -1,  0, 0,  1, 1, 1};
-	     int colNbr[] = {-1,  0,  1, -1, 1, -1, 0, 1};
-	 
-	    // Mark this cell as visited
-	    visited[row][col] = 1;
-	 
-	    // Recur for all connected neighbors
-	    for (int k = 0; k < 8; ++k)
-	        {
-	    	if (safe(M, row + rowNbr[k], col + colNbr[k], visited) )
-	            {
-	    		DFS(M, row + rowNbr[k], col + colNbr[k], visited, bottom ,up,left,right);
-	    		 if(row<left.x)
-	                	{left.x=row;left.y=col;} //find the leftmost position of the object  
-	                if(row>right.x)
-	                	{right.x=row;right.y=col;} //find the rightmost position of the object   
-	                if(col>bottom.y)
-	                	{bottom.y=col;bottom.x=row;} //find the bottom most position of the object  
-	                if(col<up.y)
-	                	{up.y=col;up.x=row;} //find the topmost position of the object  
-	                
-	            }
-	    	}
-	}
-	 
-	// The main function that returns count of islands in a given boolean
-	// 2D matrix
-	static int countIslands(int M[][])
-	{
-	    // Make a Boolean array to mark visited cells.
-	    // Initially all cells are unvisited
-	    
-		int visited[][]=new int[ROW][COL];
-	    int count = 0;
-	    position bottom,up,left,right;
-	    bottom=new position(0,0);
-	    up=new position(0,ROW);
-	    left=new position(COL,0);
-	    right=new position(0,0);
-	    for (int i = 0; i < ROW; ++i)
-	        for (int j = 0; j < COL; ++j)
-	            if (M[i][j]==1 && visited[i][j]==0) // If a cell with value 1 is not
-	            {                              // visited yet, then new island found
-	                DFS(M, i, j, visited,bottom,up,left,right); // Visit all cells in this island.
-	                //store the center of the object
-	         	    img_array[img_num-1].CENTRE[count].x=((bottom.x + up.x + right.x + left.x)/4); //x-coordinate of center 
-	         	    img_array[img_num-1].CENTRE[count].y=((bottom.y + up.y + right.y + left.y)/4); //y-coordinate of center
-	         	    ++count; //increase the count for this object 
-	            }
-	   
-	  return count; //return the number of objects in the current frame
-	}
+	
 
 	public static void main(String args[]) throws IOException
 	{
@@ -98,39 +33,30 @@ class location{
 		//Read the file to a BufferedImage  
 		BufferedImage image = ImageIO.read(input);  
 		
+		/*
+		
 		//Create a file for the output  
 		File output = new File(filename + "temp.bmp");  //convert it into bmp and store it in the same folder 
 		//Write the image to the destination as a BMP  
 		ImageIO.write(image, "bmp", output); 
+		*/
 		
-		Image image1 = ImageIO.read(output);
+		
+		Image image1 = ImageIO.read(input);
 		BufferedImage img = new BufferedImage(image1.getWidth(null), image1.getHeight(null), BufferedImage.TYPE_BYTE_GRAY);
 		Graphics g = img.createGraphics();
 		g.drawImage(image1, 0, 0, null);
 		g.dispose();
 		
-		int w = img.getWidth();ROW=w; //height of image 
-		int h = img.getHeight();COL=h; //width of image
+		int w = img.getWidth(); //height of image 
+		int h = img.getHeight(); //width of image
 
-		int[][] array = new int[w][h];
+		int[][] array = new int[w][h]; 
 		
-		Raster raster = img.getData();
-		for (int j = 0; j < w; j++) {
-		    for (int k = 0; k < h; k++) {
-		        array[j][k] = raster.getSample(j, k, 0); //convert the bitmap into an array
-		    }
-		}
+		HelperFunctions.convertImageToMatrix(img,array,w,h);
+		HelperFunctions.threshold(array,w,h,180);
 		
-		for (int j = 0; j < w; j++) {
-		    for (int k = 0; k < h; k++) {
-		    	if(array[j][k] > 180) //pixel values > 180 are assigned to 0
-		    		array[j][k]=0;
-		    	else
-		    		array[j][k]=1; //pixel values < 180 are assigned to 1
-		    }
-		}
-		
-		int count = countIslands(array);
+		int count = HelperFunctions.countIslands(array,img_array,img_num);
 		img_array[img_num-1].count=count; // populate the count variable with number of objects in the image 
 	}
 	
@@ -197,4 +123,6 @@ class location{
 				arr[i]=true;			
 		}	
 	}
+	
+	
 }

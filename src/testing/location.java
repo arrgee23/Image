@@ -10,8 +10,8 @@ import javax.imageio.ImageIO;
 class location{
 	static int COL=0;
 	static int ROW=0;
-	static int COUNT=11; //no of frames in the video
-	static String filename = "E:\\ITR_test\\input\\input"; // file path of frames - must end with \\input and name of frames must be of the form  
+	static int COUNT=5; //no of frames in the video
+	static String filename = "input1/input"; // file path of frames - must end with \\input and name of frames must be of the form  
 														   // input<number>.jpg
 	static int img_num=1; //index to iterate over all images/frames
 	static MyImage[] img_array = new MyImage[COUNT];  
